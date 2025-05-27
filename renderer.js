@@ -41,6 +41,7 @@ refreshBtn.addEventListener('click', () => {
 // Dropdown menu logic
 const menuBtn = document.getElementById('menu-btn');
 const dropdownMenu = document.getElementById('dropdown-menu');
+const webviewField = document.getElementById('browser-frame');
 
 document.addEventListener('click', (e) => {
     if (menuBtn.contains(e.target)) {
@@ -48,4 +49,79 @@ document.addEventListener('click', (e) => {
     } else if (!dropdownMenu.contains(e.target)) {
         dropdownMenu.classList.remove('show');
     }
+});
+
+// Also close dropdown when clicking inside the webview
+if (webviewField) {
+    webviewField.addEventListener('focus', () => {
+        dropdownMenu.classList.remove('show');
+    });
+    // For some Electron/webview implementations, 'focus' may not fire.
+    // As a fallback, use 'mousedown' on the webview container:
+    webviewField.addEventListener('mousedown', () => {
+        dropdownMenu.classList.remove('show');
+    });
+}
+
+// Settings popup logic
+const settingsBtn = document.getElementById('settings-btn');
+
+function createSettingsPopup() {
+    if (document.getElementById('settings-popup')) return;
+    const popup = document.createElement('div');
+    popup.id = 'settings-popup';
+    popup.innerHTML = `
+        <div class="settings-content">
+            <h2>Settings</h2>
+            <label class="theme-toggle">
+                <span>Theme:</span>
+                <select id="theme-select">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </label>
+            <button id="close-settings">Close</button>
+        </div>
+    `;
+    document.body.appendChild(popup);
+    // Overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'settings-overlay';
+    document.body.appendChild(overlay);
+
+    // Set current theme in select
+    const theme = localStorage.getItem('app-theme') || 'light';
+    document.getElementById('theme-select').value = theme;
+
+    // Close logic
+    document.getElementById('close-settings').onclick = closeSettingsPopup;
+    overlay.onclick = closeSettingsPopup;
+
+    // Theme change logic
+    document.getElementById('theme-select').onchange = (e) => {
+        setTheme(e.target.value);
+    };
+}
+
+function closeSettingsPopup() {
+    const popup = document.getElementById('settings-popup');
+    const overlay = document.getElementById('settings-overlay');
+    if (popup) popup.remove();
+    if (overlay) overlay.remove();
+}
+
+function setTheme(theme) {
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('app-theme', theme);
+}
+
+// Load theme on startup
+(function() {
+    const theme = localStorage.getItem('app-theme') || 'light';
+    setTheme(theme);
+})();
+
+settingsBtn.addEventListener('click', () => {
+    createSettingsPopup();
+    document.getElementById('dropdown-menu').classList.remove('show');
 });
