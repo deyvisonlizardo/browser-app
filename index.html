@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Browser App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="nav-bar">
+        <button id="back-btn" title="Back">&#x25C0;</button>
+        <button id="forward-btn" title="Forward">&#x25B6;</button>
+        <button id="refresh-btn" title="Refresh">&#x21bb;</button>
+        <div id="url-bar"></div>
+    </div>
+    <div id="webview-container">
+        <webview id="browser-frame" src="https://www.icbeutechzone.com"></webview>
+    </div>
+    <script src="renderer.js"></script>
+</body>
+</html>
