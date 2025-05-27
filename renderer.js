@@ -37,3 +37,15 @@ forwardBtn.addEventListener('click', () => {
 refreshBtn.addEventListener('click', () => {
     webview.reload();
 });
+
+// Dropdown menu logic
+const menuBtn = document.getElementById('menu-btn');
+const dropdownMenu = document.getElementById('dropdown-menu');
+
+document.addEventListener('click', (e) => {
+    if (menuBtn.contains(e.target)) {
+        dropdownMenu.classList.toggle('show');
+    } else if (!dropdownMenu.contains(e.target)) {
+        dropdownMenu.classList.remove('show');
+    }
+});
