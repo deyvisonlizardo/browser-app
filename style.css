@@ -9,8 +9,8 @@
     --color-primary: #2563eb;
     --color-primary-dark: #1749b1;
     --color-primary-light: #7ab4fa;
-    --color-nav-bg: linear-gradient(90deg, #f3f6fb 0%, #e9eef6 100%);
-    --color-nav-bg-dark: linear-gradient(90deg, #23272e 0%, #181a1b 100%);
+    --color-nav-bg: #e9eef6;
+    --color-nav-bg-dark: #181a1b;
     --color-border: #e1e6ef;
     --color-border-dark: #23272e;
     --color-btn-bg: #f7fafd;
@@ -30,7 +30,7 @@
     --color-popup-bg: #fff;
     --color-popup-bg-dark: #23272e;
     --color-popup-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
-    --color-overlay: rgba(0, 0, 0, 0.18);
+    --color-overlay: rgba(0, 0, 0, 0.700);
     --color-close-btn-bg: #2563eb;
     --color-close-btn-bg-dark: #7ab4fa;
     --color-close-btn-hover-bg: #1749b1;

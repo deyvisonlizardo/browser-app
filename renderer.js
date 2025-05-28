@@ -65,6 +65,7 @@ if (webviewField) {
 
 // Settings popup logic
 const settingsBtn = document.getElementById('settings-btn');
+const closeBtn = document.getElementById('close-btn');
 
 function createSettingsPopup() {
     if (document.getElementById('settings-popup')) return;
@@ -124,4 +125,20 @@ function setTheme(theme) {
 settingsBtn.addEventListener('click', () => {
     createSettingsPopup();
     document.getElementById('dropdown-menu').classList.remove('show');
+});
+
+// Close app when 'Close' button is clicked
+closeBtn.addEventListener('click', () => {
+    window.close(); // fallback for browser context
+    try {
+        const { app } = require('@electron/remote');
+        app.quit();
+    } catch (e) {
+        try {
+            const { remote } = require('electron');
+            remote.app.quit();
+        } catch (err) {
+            // If both fail, do nothing
+        }
+    }
 });
