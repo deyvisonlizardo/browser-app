@@ -3,6 +3,7 @@ const urlBar = document.getElementById('url-bar');
 const backBtn = document.getElementById('back-btn');
 const forwardBtn = document.getElementById('forward-btn');
 const refreshBtn = document.getElementById('refresh-btn');
+const clearCacheBtn = document.getElementById('clear-cache-btn');
 
 function updateNavButtons() {
     backBtn.disabled = !webview.canGoBack();
@@ -125,6 +126,45 @@ function setTheme(theme) {
 settingsBtn.addEventListener('click', () => {
     createSettingsPopup();
     document.getElementById('dropdown-menu').classList.remove('show');
+});
+
+// Utility to show a temporary notification
+function showNotification(message, duration = 2000) {
+    let notif = document.getElementById('custom-notification');
+    if (!notif) {
+        notif = document.createElement('div');
+        notif.id = 'custom-notification';
+        notif.style.position = 'fixed';
+        notif.style.top = '80px';
+        notif.style.left = '50%';
+        notif.style.transform = 'translateX(-50%)';
+        notif.style.background = '#222';
+        notif.style.color = '#fff';
+        notif.style.padding = '10px 24px';
+        notif.style.borderRadius = '6px';
+        notif.style.zIndex = '9999';
+        notif.style.boxShadow = '0 2px 8px rgba(0,0,0,0.5)';
+        document.body.appendChild(notif);
+    }
+    notif.textContent = message;
+    notif.style.display = 'block';
+    setTimeout(() => {
+        notif.style.display = 'none';
+    }, duration);
+}
+
+// Clear cache logic
+clearCacheBtn.addEventListener('click', async () => {
+    const { session } = require('@electron/remote');
+    try {
+        await session.defaultSession.clearCache();
+        await session.defaultSession.clearStorageData();
+        webview.reload();
+        showNotification('Cache and storage cleared!');
+    } catch (err) {
+        showNotification('Failed to clear cache: ' + err.message, 4000);
+    }
+    dropdownMenu.classList.remove('show');
 });
 
 // Close app when 'Close' button is clicked
