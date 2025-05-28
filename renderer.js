@@ -158,7 +158,11 @@ clearCacheBtn.addEventListener('click', async () => {
     const { session } = require('@electron/remote');
     try {
         await session.defaultSession.clearCache();
-        await session.defaultSession.clearStorageData();
+        // Only clear cookies, indexeddb, etc. Do NOT clear localStorage
+        await session.defaultSession.clearStorageData({
+            storages: ['cookies', 'indexdb', 'websql', 'serviceworkers', 'cachestorage', 'shadercache'],
+            quotas: ['temporary', 'persistent', 'syncable']
+        });
         webview.reload();
         showNotification('Cache and storage cleared!');
     } catch (err) {
