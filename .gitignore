@@ -2,9 +2,9 @@
 node_modules/
 
 # Electron build output
-/dist
-/build
-/out
+dist/
+build/
+out/
 
 # Logs
 npm-debug.log*
@@ -29,3 +29,19 @@ Thumbs.db
 
 # Optional: Ignore packaged apps
 *.asar
+
+# Electron-builder output
+/dist/
+win-unpacked/
+*.exe
+*.dmg
+*.AppImage
+*.snap
+*.msi
+*.deb
+*.rpm
+*.tar.gz
+*.zip
+
+# Electron-builder cache
+C:/Users/deyvison.santos.ICBEUMANAUS/AppData/Local/electron-builder/Cache/

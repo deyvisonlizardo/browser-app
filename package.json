@@ -2,15 +2,32 @@
   "name": "browser-app",
   "version": "1.0.0",
   "main": "main.js",
+  "build": {
+    "appId": "com.yourcompany.browserapp",
+    "productName": "BrowserApp",
+    "files": [
+      "**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "win": {
+      "target": "nsis"
+    }
+  },
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "dist": "electron-builder"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "A simple Electron-based browser app.",
   "dependencies": {
-    "@electron/remote": "^2.1.2",
-    "electron": "^36.3.1"
+    "@electron/remote": "^2.1.2"
+  },
+  "devDependencies": {
+    "electron": "^36.3.1",
+    "electron-builder": "^26.0.12"
   }
 }
