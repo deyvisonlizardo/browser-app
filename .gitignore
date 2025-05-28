@@ -42,6 +42,3 @@ win-unpacked/
 *.rpm
 *.tar.gz
 *.zip
-
-# Electron-builder cache
-C:/Users/deyvison.santos.ICBEUMANAUS/AppData/Local/electron-builder/Cache/
