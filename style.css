@@ -199,8 +199,7 @@ body[data-theme="dark"] #url-bar:focus {
   Webview Container
   =============================
 */
-#webview-container,
-webview {
+#webview-container {
     width: 100%;
     min-width: 0;
     max-width: 100vw;
@@ -208,6 +207,23 @@ webview {
     min-height: 0;
     max-height: calc(100vh - 52px);
     box-sizing: border-box;
+}
+
+webview {
+    width: 100%;
+    height: 100%;
+    background: #fff !important;
+    color-scheme: light !important;
+    filter: none !important;
+    /* Remove border/background inheritance */
+    border: none !important;
+    box-shadow: none !important;
+}
+
+body[data-theme="dark"] webview {
+    background: #fff !important;
+    color-scheme: light !important;
+    filter: none !important;
 }
 
 /*
