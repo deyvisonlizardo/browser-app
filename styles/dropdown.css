@@ -1,0 +1,66 @@
+/*
+  =============================
+  Dropdown Menu
+  =============================
+*/
+.dropdown-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 46px;
+    right: 0;
+    min-width: 140px;
+    background: var(--color-dropdown-bg);
+    border: 1.5px solid var(--color-dropdown-border);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10), 0 1.5px 0 var(--color-dropdown-border);
+    z-index: 100;
+    padding: 6px 0;
+    flex-direction: column;
+    gap: 2px;
+    animation: fadeIn 0.18s;
+}
+
+body[data-theme="dark"] .dropdown-menu {
+    background: var(--color-dropdown-bg-dark);
+    border-color: var(--color-dropdown-border-dark);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28), 0 1.5px 0 var(--color-dropdown-bg-dark);
+}
+
+.dropdown-menu.show {
+    display: flex;
+}
+
+.dropdown-menu button {
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--color-url-text);
+    font-size: 15px;
+    padding: 10px 18px;
+    text-align: left;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+body[data-theme="dark"] .dropdown-menu button {
+    color: var(--color-url-text-dark);
+}
+
+.dropdown-menu button:hover,
+.dropdown-menu button:focus {
+    background: var(--color-btn-hover-bg);
+    color: var(--color-primary);
+}
+
+body[data-theme="dark"] .dropdown-menu button:hover,
+body[data-theme="dark"] .dropdown-menu button:focus {
+    background: var(--color-btn-hover-bg-dark);
+    color: var(--color-primary-light);
+}

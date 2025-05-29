@@ -1,0 +1,16 @@
+/*
+  =============================
+  Main CSS Module
+  =============================
+  This file imports all CSS modules in the correct order.
+  Import this file in your HTML instead of style.css
+*/
+
+/* Import order is important for CSS cascade */
+@import url('./variables.css');
+@import url('./animations.css');
+@import url('./base.css');
+@import url('./navigation.css');
+@import url('./webview.css');
+@import url('./dropdown.css');
+@import url('./popup.css');

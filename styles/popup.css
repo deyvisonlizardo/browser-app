@@ -1,0 +1,106 @@
+/*
+  =============================
+  Settings Popup
+  =============================
+*/
+#settings-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--color-popup-bg);
+    border-radius: 16px;
+    box-shadow: var(--color-popup-shadow);
+    z-index: 200;
+    min-width: 320px;
+    padding: 32px 28px 24px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeIn 0.18s;
+}
+
+body[data-theme="dark"] #settings-popup {
+    background: var(--color-popup-bg-dark);
+    color: var(--color-url-text-dark);
+}
+
+#settings-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--color-overlay);
+    z-index: 150;
+}
+
+.settings-content h2 {
+    margin: 0 0 18px 0;
+    font-size: 22px;
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+body[data-theme="dark"] .settings-content h2 {
+    color: var(--color-primary-light);
+}
+
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    font-size: 16px;
+}
+
+#theme-select {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1.5px solid var(--color-border);
+    font-size: 15px;
+    background: var(--color-btn-bg);
+    color: var(--color-url-text);
+    outline: none;
+    transition: border 0.18s;
+}
+
+#theme-select:focus {
+    border: 1.5px solid var(--color-primary);
+}
+
+body[data-theme="dark"] #theme-select {
+    background: var(--color-btn-hover-bg-dark);
+    color: var(--color-url-text-dark);
+    border-color: var(--color-btn-hover-bg-dark);
+}
+
+body[data-theme="dark"] #theme-select:focus {
+    border: 1.5px solid var(--color-primary-light);
+}
+
+#close-settings {
+    margin-top: 8px;
+    padding: 8px 22px;
+    border-radius: 8px;
+    border: none;
+    background: var(--color-close-btn-bg);
+    color: #fff;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.18s;
+}
+
+#close-settings:hover {
+    background: var(--color-close-btn-hover-bg);
+}
+
+body[data-theme="dark"] #close-settings {
+    background: var(--color-close-btn-bg-dark);
+    color: var(--color-popup-bg-dark);
+}
+
+body[data-theme="dark"] #close-settings:hover {
+    background: var(--color-close-btn-hover-bg-dark);
+    color: #fff;
+}

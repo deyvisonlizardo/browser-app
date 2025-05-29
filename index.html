@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="UTF-8">
+<head>    <meta charset="UTF-8">
     <title>Browser App</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
     <div id="nav-bar">
@@ -17,12 +16,11 @@
                 <button id="clear-cache-btn">Clear cache</button>
                 <button id="settings-btn">Settings</button>
                 <button id="close-btn">Close</button>
-            </div>
-        </div>
+            </div>        </div>
     </div>
     <div id="webview-container">
         <webview id="browser-frame" src="https://www.icbeutechzone.com"></webview>
     </div>
-    <script src="renderer.js"></script>
+    <script type="module" src="scripts/renderer.js"></script>
 </body>
 </html>

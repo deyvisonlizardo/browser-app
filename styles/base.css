@@ -1,0 +1,24 @@
+/*
+  =============================
+  Base Styles & Global Reset
+  =============================
+*/
+body,
+html {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    min-width: 0;
+    max-width: 100vw;
+    height: 100vh;
+    min-height: 0;
+    max-height: 100vh;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--color-bg-light);
+    overflow: hidden;
+}
+
+body[data-theme="dark"],
+html[data-theme="dark"] {
+    background: var(--color-bg-dark);
+}

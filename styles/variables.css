@@ -1,0 +1,55 @@
+/*
+  =============================
+  CSS Custom Properties/Variables
+  =============================
+*/
+:root {
+    /* Background colors */
+    --color-bg-light: #f7f7f9;
+    --color-bg-dark: #181a1b;
+    
+    /* Primary colors */
+    --color-primary: #2563eb;
+    --color-primary-dark: #1749b1;
+    --color-primary-light: #7ab4fa;
+    
+    /* Navigation colors */
+    --color-nav-bg: #e9eef6;
+    --color-nav-bg-dark: #181a1b;
+    
+    /* Border colors */
+    --color-border: #e1e6ef;
+    --color-border-dark: #23272e;
+    
+    /* Button colors */
+    --color-btn-bg: #f7fafd;
+    --color-btn-bg-dark: #23272e;
+    --color-btn-hover-bg: #e5f1fb;
+    --color-btn-hover-bg-dark: #31343a;
+    --color-btn-text: #3a3a3a;
+    --color-btn-text-dark: #e3e3e3;
+    
+    /* URL bar colors */
+    --color-url-bg: #f7fafd;
+    --color-url-bg-dark: #23272e;
+    --color-url-text: #222;
+    --color-url-text-dark: #e3e3e3;
+    
+    /* Dropdown colors */
+    --color-dropdown-bg: #fff;
+    --color-dropdown-bg-dark: #23272e;
+    --color-dropdown-border: #e1e6ef;
+    --color-dropdown-border-dark: #31343a;
+    
+    /* Popup colors */
+    --color-popup-bg: #fff;
+    --color-popup-bg-dark: #23272e;
+    --color-popup-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    --color-overlay: rgba(0, 0, 0, 0.700);
+    
+    /* Close button colors */
+    --color-close-btn-bg: #2563eb;
+    --color-close-btn-bg-dark: #7ab4fa;
+    --color-close-btn-hover-bg: #1749b1;
+    --color-close-btn-hover-bg-dark: #2563eb;
+}
