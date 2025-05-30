@@ -74,6 +74,16 @@ body[data-theme="dark"] #menu-btn {
     box-shadow: none;
 }
 
+body[data-theme="dark"] #back-btn:disabled,
+body[data-theme="dark"] #forward-btn:disabled,
+body[data-theme="dark"] #refresh-btn:disabled {
+    color: #4a5568;
+    background: #23272e;
+    border-color: #23272e;
+    cursor: default;
+    box-shadow: none;
+}
+
 /* Button hover states */
 #back-btn:hover:not(:disabled),
 #forward-btn:hover:not(:disabled),
