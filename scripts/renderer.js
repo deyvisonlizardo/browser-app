@@ -64,7 +64,21 @@ function updateActiveTabWithCurrentPage() {
             icon.style.verticalAlign = 'middle';
             tab.appendChild(icon);
         }
-        tab.appendChild(document.createTextNode(title || webview.getURL()));
+        // Limit tab title length and add ellipsis if too long
+        const maxTabTitleLength = 32;
+        let displayTitle = title || webview.getURL();
+        if (displayTitle.length > maxTabTitleLength) {
+            displayTitle = displayTitle.slice(0, maxTabTitleLength - 1) + '…';
+        }
+        const titleSpan = document.createElement('span');
+        titleSpan.textContent = displayTitle;
+        titleSpan.style.overflow = 'hidden';
+        titleSpan.style.textOverflow = 'ellipsis';
+        titleSpan.style.whiteSpace = 'nowrap';
+        titleSpan.style.maxWidth = '160px';
+        titleSpan.style.minWidth = '160px';
+        titleSpan.style.display = 'inline-block';
+        tab.appendChild(titleSpan);
         // Re-add close button
         const closeBtn = document.createElement('button');
         closeBtn.className = 'close-tab';
