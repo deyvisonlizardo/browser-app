@@ -33,6 +33,7 @@ let tabs = [{
 }];
 
 const DEFAULT_URL = 'https://www.icbeutechzone.com';
+const MAX_TABS = 3;
 
 // Tab-aware navigation functions
 function updateNavButtons() {
@@ -130,6 +131,13 @@ function renderTabs() {
         const tabElem = createTabElement(tab);
         tabBar.insertBefore(tabElem, addBtn);
     });
+    
+    // Show/hide add button based on max tabs limit
+    if (tabs.length >= MAX_TABS) {
+        addBtn.style.display = 'none';
+    } else {
+        addBtn.style.display = 'flex';
+    }
 }
 
 function activateTab(tabId) {
