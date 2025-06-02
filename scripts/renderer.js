@@ -189,9 +189,8 @@ function closeTab(tabId) {
 }
 
 function addTab(url = null) {
-    // Use the current active tab's URL as default if no URL specified
-    const activeTab = tabs.find(t => t.active);
-    const defaultUrl = url || (activeTab && activeTab.webview ? activeTab.webview.getURL() : DEFAULT_URL);
+    // Always use DEFAULT_URL for new tabs unless a specific URL is provided
+    const defaultUrl = url || DEFAULT_URL;
     
     const newTab = {
         id: tabIdCounter++,
