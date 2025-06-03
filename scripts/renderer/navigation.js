@@ -1,21 +1,6 @@
 // Navigation and URL bar logic
 export function initNavigation(webview, urlBar, backBtn, forwardBtn, refreshBtn) {
-    function updateNavButtons() {
-        backBtn.disabled = !webview.canGoBack();
-        forwardBtn.disabled = !webview.canGoForward();
-    }
-    webview.addEventListener('did-navigate', (event) => {
-        urlBar.textContent = event.url;
-        updateNavButtons();
-    });
-    webview.addEventListener('did-navigate-in-page', (event) => {
-        urlBar.textContent = event.url;
-        updateNavButtons();
-    });
-    webview.addEventListener('dom-ready', () => {
-        urlBar.textContent = webview.getURL();
-        updateNavButtons();
-    });
+    // Only set up button click handlers, not webview event listeners
     backBtn.addEventListener('click', () => {
         if (webview.canGoBack()) webview.goBack();
     });

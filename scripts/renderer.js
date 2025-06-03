@@ -217,7 +217,10 @@ function addTab(url = null) {
 
 function attachWebviewEvents(tab) {
     if (!tab.webview) return;
-    
+    // Prevent attaching listeners multiple times
+    if (tab.webview._listenersAttached) return;
+    tab.webview._listenersAttached = true;
+
     tab.webview.addEventListener('did-navigate', (event) => {
         tab.url = event.url;
         updateTabInfo(tab);
