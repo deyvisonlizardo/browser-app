@@ -11,6 +11,8 @@ function createWindow() {
             contextIsolation: false,
             webviewTag: true, // Enable <webview> tag
             enableRemoteModule: true, // Required for @electron/remote
+            allowRunningInsecureContent: true, // Allow mixed content if needed
+            webSecurity: false, // Allow cross-origin requests for webview content
         },
     });
 

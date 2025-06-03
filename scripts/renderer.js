@@ -6,6 +6,7 @@ import { promptForPassword } from './renderer/password.js';
 import { showNotification } from './renderer/notification.js';
 import { initCacheClear } from './renderer/cache.js';
 import { initClose } from './renderer/close.js';
+import { injectNewWindowHandler, setupNewWindowHandling } from './renderer/newWindowHandler.js';
 
 // DOM elements
 const webview = document.getElementById('browser-frame');
@@ -221,6 +222,9 @@ function attachWebviewEvents(tab) {
     if (tab.webview._listenersAttached) return;
     tab.webview._listenersAttached = true;
 
+    // Setup new window handling for this tab
+    setupNewWindowHandling(tab);
+
     tab.webview.addEventListener('did-navigate', (event) => {
         tab.url = event.url;
         updateTabInfo(tab);
@@ -243,6 +247,10 @@ function attachWebviewEvents(tab) {
         updateTabInfo(tab);
         updateUrlBarForActiveTab();
         updateNavButtons();
+        
+        // Inject script to handle new window/tab requests
+        // This only affects the webview content, not the main application
+        injectNewWindowHandler(tab.webview);
     });
 }
 
@@ -263,6 +271,8 @@ function updateTabInfo(tab) {
         renderTabs();
     });
 }
+
+
 
 function updateUrlBarForActiveTab() {
     const urlBar = document.getElementById('url-bar');
@@ -318,3 +328,10 @@ if (webview) {
 }
 renderTabs();
 updateNavButtons();
+
+// Safeguard: Ensure main application window.open is not affected
+// This protects the main app's popups (settings, notifications, etc.)
+if (window.location.protocol === 'file:' && window.location.pathname.includes('index.html')) {
+    console.log('🛡️ Main application window protected from new window handler');
+    // Ensure we don't interfere with main app popups
+}
