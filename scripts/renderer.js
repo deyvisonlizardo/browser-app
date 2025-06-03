@@ -113,9 +113,26 @@ function createTabElement(tab) {
         closeTab(tab.id);
     };
     tabDiv.appendChild(closeBtn);
-    
-    // Click to activate
+      // Click to activate
     tabDiv.onclick = () => activateTab(tab.id);
+    
+    // Prevent middle mouse button from opening new tabs
+    tabDiv.addEventListener('auxclick', (e) => {
+        if (e.button === 1) { // Middle mouse button
+            e.preventDefault();
+            e.stopPropagation();
+            // Just activate the tab instead of opening a new one
+            activateTab(tab.id);
+        }
+    });
+    
+    tabDiv.addEventListener('mousedown', (e) => {
+        if (e.button === 1) { // Middle mouse button
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
+    
     return tabDiv;
 }
 
@@ -171,6 +188,24 @@ function createWebviewForTab(tab) {
     newWebview.style.width = '100%';
     newWebview.style.height = '100%';
     newWebview.style.display = tab.active ? '' : 'none';
+    
+    // Prevent middle mouse button from opening new tabs/windows
+    newWebview.addEventListener('auxclick', (e) => {
+        if (e.button === 1) { // Middle mouse button
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🚫 Middle mouse click on webview prevented');
+        }
+    });
+    
+    newWebview.addEventListener('mousedown', (e) => {
+        if (e.button === 1) { // Middle mouse button
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🚫 Middle mouse down on webview prevented');
+        }
+    });
+    
     webviewContainer.appendChild(newWebview);
     tab.webview = newWebview;
     attachWebviewEvents(tab);
@@ -321,8 +356,42 @@ settingsBtn.addEventListener('click', async () => {
 // Add tab button functionality
 document.getElementById('add-tab-btn').onclick = () => addTab();
 
+// Global prevention of middle mouse button new tab behavior
+document.addEventListener('auxclick', (e) => {
+    if (e.button === 1) { // Middle mouse button
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🚫 Global middle mouse button click intercepted and prevented');
+    }
+}, true);
+
+document.addEventListener('mousedown', (e) => {
+    if (e.button === 1) { // Middle mouse button
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🚫 Global middle mouse button down intercepted and prevented');
+    }
+}, true);
+
 // Initial setup for the first tab
 if (webview) {
+    // Add middle mouse button prevention to the initial webview
+    webview.addEventListener('auxclick', (e) => {
+        if (e.button === 1) { // Middle mouse button
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🚫 Middle mouse click on initial webview prevented');
+        }
+    });
+    
+    webview.addEventListener('mousedown', (e) => {
+        if (e.button === 1) { // Middle mouse button
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🚫 Middle mouse down on initial webview prevented');
+        }
+    });
+    
     attachWebviewEvents(tabs[0]);
     updateTabInfo(tabs[0]);
 }

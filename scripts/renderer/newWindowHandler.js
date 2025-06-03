@@ -132,9 +132,38 @@ export function injectNewWindowHandler(webview) {
                     }
                 }
             }
-            
-            // Attach click listener with capture to catch all link clicks
+              // Attach click listener with capture to catch all link clicks
             document.addEventListener('click', handleLinkClick, true);
+            
+            // Handle middle mouse button clicks (auxclick events)
+            document.addEventListener('auxclick', function(event) {
+                // Middle mouse button is button 1 (left=0, middle=1, right=2)
+                if (event.button === 1) {
+                    const link = event.target.closest('a');
+                    if (link && link.href) {
+                        console.log('🚫 Middle mouse button click intercepted on link:', link.href);
+                        event.preventDefault();
+                        event.stopPropagation();
+                        // Navigate to the link in the current tab instead of opening a new one
+                        window.location.href = link.href;
+                        return false;
+                    }
+                }
+            }, true);
+            
+            // Handle mousedown events for middle button to catch cases before auxclick
+            document.addEventListener('mousedown', function(event) {
+                // Middle mouse button is button 1
+                if (event.button === 1) {
+                    const link = event.target.closest('a');
+                    if (link && link.href) {
+                        console.log('🚫 Middle mouse button down intercepted on link:', link.href);
+                        event.preventDefault();
+                        event.stopPropagation();
+                        return false;
+                    }
+                }
+            }, true);
             
             // 3. Handle dynamically created links
             const observer = new MutationObserver(function(mutations) {
@@ -266,7 +295,7 @@ export function setupNewWindowHandling(tab) {
             )) ||
 
             // Default allow if disposition suggests it's not a regular new tab
-            (event.disposition && event.disposition !== 'foreground-tab' && event.disposition !== 'background-tab')
+            (event.disposition && event.disposition !== 'foreground-tab' && event.disposition !== 'background-tab' && event.disposition !== 'middle-click')
         );
 
         if (isLegitimatePopup) {
@@ -274,20 +303,14 @@ export function setupNewWindowHandling(tab) {
             return; // Allow the popup to open naturally
         }
 
-        // Only block what appears to be regular new tabs/windows
-        if (event.disposition === 'foreground-tab' || event.disposition === 'background-tab' ||
-            event.disposition === 'new-window' || !event.disposition) {
-            console.log('🚫 Blocking new tab/window, redirecting to current tab:', event.url);
-            event.preventDefault();
+        // Block ALL new tab/window attempts including middle-click
+        console.log('🚫 Blocking new tab/window (including middle-click), redirecting to current tab:', event.url);
+        event.preventDefault();
 
-            // Navigate the current active tab to the new URL instead of opening a new window
-            if (event.url && tab.webview) {
-                console.log('➡️ Redirecting to current tab:', event.url);
-                tab.webview.loadURL(event.url);
-            }
-        } else {
-            // For any other disposition types, allow them through
-            console.log('🟡 Allowing unknown disposition type:', event.disposition, event.url);
+        // Navigate the current active tab to the new URL instead of opening a new window
+        if (event.url && tab.webview) {
+            console.log('➡️ Redirecting to current tab:', event.url);
+            tab.webview.loadURL(event.url);
         }
     });
 
