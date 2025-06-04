@@ -321,26 +321,8 @@ function updateUrlBarForActiveTab() {
 initTabAwareNavigation();
 initDropdown(menuBtn, dropdownMenu, webviewField);
 
-// Tab-aware cache clear function
-clearCacheBtn.addEventListener('click', async () => {
-    const { session } = require('@electron/remote');
-    const { showNotification } = await import('./renderer/notification.js');
-    try {
-        await session.defaultSession.clearCache();
-        await session.defaultSession.clearStorageData({
-            storages: ['cookies', 'indexdb', 'websql', 'serviceworkers', 'cachestorage', 'shadercache'],
-            quotas: ['temporary', 'persistent', 'syncable']
-        });
-        const activeTab = tabs.find(t => t.active);
-        if (activeTab && activeTab.webview) {
-            activeTab.webview.reload();
-        }
-        showNotification('Cache cleared!');
-    } catch (err) {
-        showNotification('Failed to clear cache: ' + err.message, 4000);
-    }
-    dropdownMenu.classList.remove('show');
-});
+// Initialize improved cache clearing function
+initCacheClear(clearCacheBtn, null, dropdownMenu);
 
 initClose(closeBtn);
 
