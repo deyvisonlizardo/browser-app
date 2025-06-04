@@ -1,4 +1,6 @@
 // Settings popup and theme logic
+import { settingsManager } from './settingsManager.js';
+
 export function createSettingsPopup(closeSettingsPopup, setTheme) {
     if (document.getElementById('settings-popup')) return;
     const popup = document.createElement('div');
@@ -13,6 +15,9 @@ export function createSettingsPopup(closeSettingsPopup, setTheme) {
                     <option value="dark">Dark</option>
                 </select>
             </label>
+            <div class="settings-info">
+                <small>Settings file: <span id="settings-path">${settingsManager.getSettingsFilePath()}</span></small>
+            </div>
             <button id="close-settings">Close</button>
         </div>
     `;
@@ -20,7 +25,7 @@ export function createSettingsPopup(closeSettingsPopup, setTheme) {
     const overlay = document.createElement('div');
     overlay.id = 'settings-overlay';
     document.body.appendChild(overlay);
-    const theme = localStorage.getItem('app-theme') || 'light';
+    const theme = settingsManager.getSetting('theme') || 'light';
     document.getElementById('theme-select').value = theme;
     document.getElementById('close-settings').onclick = closeSettingsPopup;
     overlay.onclick = closeSettingsPopup;
@@ -38,10 +43,10 @@ export function closeSettingsPopup() {
 
 export function setTheme(theme) {
     document.body.setAttribute('data-theme', theme);
-    localStorage.setItem('app-theme', theme);
+    settingsManager.setSetting('theme', theme);
 }
 
 export function loadThemeOnStartup(setTheme) {
-    const theme = localStorage.getItem('app-theme') || 'light';
+    const theme = settingsManager.getSetting('theme') || 'light';
     setTheme(theme);
 }
