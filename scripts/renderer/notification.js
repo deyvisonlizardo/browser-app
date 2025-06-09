@@ -1,9 +1,9 @@
 // Notification utility
 export function showNotification(message, duration = 2000) {
-    let notif = document.getElementById('custom-notification');
+    let notif = document.getElementById('notification');
     if (!notif) {
         notif = document.createElement('div');
-        notif.id = 'custom-notification';
+        notif.id = 'notification';
         notif.style.position = 'fixed';
         notif.style.top = '80px';
         notif.style.left = '50%';

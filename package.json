@@ -17,7 +17,14 @@
   },
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest tests/unit",
+    "test:integration": "jest tests/integration",
+    "test:e2e": "jest tests/e2e",
+    "test:manual": "node tests/manual/manual-test-runner.js"
   },
   "keywords": [],
   "author": "",
@@ -25,9 +32,45 @@
   "description": "A simple Electron-based browser app.",
   "dependencies": {
     "@electron/remote": "^2.1.2"
-  },
-  "devDependencies": {
+  },  "devDependencies": {
+    "@babel/core": "^7.27.4",
+    "@babel/preset-env": "^7.27.2",
+    "@jest/globals": "^29.7.0",
+    "babel-jest": "^30.0.0-beta.3",
     "electron": "^36.3.1",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.0.12",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "puppeteer": "^21.5.0",
+    "spectron": "^19.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup/jest.setup.js"
+    ],
+    "testMatch": [
+      "<rootDir>/tests/**/*.test.js"
+    ],    "transform": {
+      "^.+\\.js$": "babel-jest"
+    },
+    "moduleNameMapper": {
+      "^electron$": "<rootDir>/tests/setup/__mocks__/electron.js",
+      "^@electron/remote$": "<rootDir>/tests/setup/__mocks__/electron-remote.js"
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!(electron|@electron/remote)/)"
+    ],
+    "collectCoverageFrom": [
+      "scripts/**/*.js",
+      "!scripts/**/*.test.js",
+      "!node_modules/**"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ]
   }
 }

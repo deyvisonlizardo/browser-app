@@ -1,12 +1,11 @@
 // Modularized imports
-import { initNavigation } from './renderer/navigation.js';
 import { initDropdown } from './renderer/dropdown.js';
 import { createSettingsPopup, closeSettingsPopup, setTheme, loadThemeOnStartup } from './renderer/settings.js';
 import { promptForPassword } from './renderer/password.js';
 import { showNotification } from './renderer/notification.js';
 import { initCacheClear } from './renderer/cache.js';
 import { initClose } from './renderer/close.js';
-import { injectNewWindowHandler, setupNewWindowHandling } from './renderer/newWindowHandler.js';
+import { injectNewWindowHandler, setupNewWindowHandling, cleanupNewWindowHandling } from './renderer/newWindowHandler.js';
 
 // DOM elements
 const webview = document.getElementById('browser-frame');
@@ -28,23 +27,31 @@ let tabs = [{
     id: 0,
     title: 'Loading...',
     favicon: '',
-    url: webview ? webview.getAttribute('src') : 'https://www.icbeutechzone.com',
+    url: webview ? webview.getAttribute('src') : 'https://www.icbeutechzone.com/',
     active: true,
     webview: webview
 }];
 
-const DEFAULT_URL = 'https://www.icbeutechzone.com';
+const DEFAULT_URL = 'https://www.icbeutechzone.com/';
 const MAX_TABS = 3;
 
 // Tab-aware navigation functions
 function updateNavButtons() {
     const activeTab = tabs.find(t => t.active);
     if (activeTab && activeTab.webview) {
-        backBtn.disabled = !activeTab.webview.canGoBack();
-        forwardBtn.disabled = !activeTab.webview.canGoForward();
+        try {
+            backBtn.disabled = !activeTab.webview.canGoBack();
+            forwardBtn.disabled = !activeTab.webview.canGoForward();
+            console.log('🔄 Navigation buttons updated - Back:', !backBtn.disabled, 'Forward:', !forwardBtn.disabled);
+        } catch (error) {
+            console.warn('⚠️ Error updating nav buttons:', error);
+            backBtn.disabled = true;
+            forwardBtn.disabled = true;
+        }
     } else {
         backBtn.disabled = true;
         forwardBtn.disabled = true;
+        console.log('⚠️ No active webview found, disabling navigation buttons');
     }
 }
 
@@ -53,6 +60,9 @@ function initTabAwareNavigation() {
         const activeTab = tabs.find(t => t.active);
         if (activeTab && activeTab.webview && activeTab.webview.canGoBack()) {
             activeTab.webview.goBack();
+            showNotification('Navigated back', 2000);
+        } else {
+            showNotification('Cannot go back', 2000);
         }
     });
     
@@ -60,6 +70,9 @@ function initTabAwareNavigation() {
         const activeTab = tabs.find(t => t.active);
         if (activeTab && activeTab.webview && activeTab.webview.canGoForward()) {
             activeTab.webview.goForward();
+            showNotification('Navigated forward', 2000);
+        } else {
+            showNotification('Cannot go forward', 2000);
         }
     });
     
@@ -67,6 +80,9 @@ function initTabAwareNavigation() {
         const activeTab = tabs.find(t => t.active);
         if (activeTab && activeTab.webview) {
             activeTab.webview.reload();
+            showNotification('Page refreshed', 2000);
+        } else {
+            showNotification('Cannot refresh - no active tab', 2000);
         }
     });
 }
@@ -215,9 +231,22 @@ function closeTab(tabId) {
     const idx = tabs.findIndex(t => t.id === tabId);
     if (idx === -1) return;
     
-    // Remove webview if exists
-    if (tabs[idx].webview) {
-        tabs[idx].webview.remove();
+    const tabToClose = tabs[idx];
+      // Clean up event listeners to prevent memory leaks
+    if (tabToClose.webview) {
+        console.log('🧹 Cleaning up event listeners for tab:', tabId);
+        
+        // Clean up new window handlers
+        cleanupNewWindowHandling(tabToClose);
+        
+        // Clean up webview events
+        cleanupWebviewEvents(tabToClose);
+        
+        // Reset the main listeners flag
+        delete tabToClose.webview._listenersAttached;
+        
+        // Remove the webview from DOM
+        tabToClose.webview.remove();
     }
     
     tabs.splice(idx, 1);
@@ -257,54 +286,112 @@ function attachWebviewEvents(tab) {
     if (tab.webview._listenersAttached) return;
     tab.webview._listenersAttached = true;
 
-    // Setup new window handling for this tab
-    setupNewWindowHandling(tab);
+    console.log('🔗 Attaching events to webview for tab:', tab.id);
 
-    tab.webview.addEventListener('did-navigate', (event) => {
+    // Setup new window handling for this tab
+    setupNewWindowHandling(tab);    // Store event handler references for potential cleanup
+    const didNavigateHandler = (event) => {
         tab.url = event.url;
         updateTabInfo(tab);
         updateUrlBarForActiveTab();
         updateNavButtons();
-    });
-    
-    tab.webview.addEventListener('did-navigate-in-page', (event) => {
+    };
+
+    const didNavigateInPageHandler = (event) => {
         tab.url = event.url;
-        updateTabInfo(tab);
+        // Only update URL bar for in-page navigation, tab info will be updated by page-title-updated if needed
         updateUrlBarForActiveTab();
         updateNavButtons();
-    });
-    
-    tab.webview.addEventListener('page-title-updated', () => {
+    };
+
+    const pageTitleUpdatedHandler = () => {
         updateTabInfo(tab);
-    });
-    
-    tab.webview.addEventListener('dom-ready', () => {
+    };    const domReadyHandler = () => {
+        console.log('✅ Webview DOM ready for tab:', tab.id);
+        // Initial tab info update when DOM is ready
         updateTabInfo(tab);
         updateUrlBarForActiveTab();
         updateNavButtons();
         
         // Inject script to handle new window/tab requests
         // This only affects the webview content, not the main application
-        injectNewWindowHandler(tab.webview);
-    });
+        // Only inject once per webview to prevent memory leaks
+        if (!tab.webview._newWindowHandlerInjected) {
+            tab.webview._newWindowHandlerInjected = true;
+            injectNewWindowHandler(tab.webview);
+        }
+    };
+
+    const didStopLoadingHandler = () => {
+        console.log('🏁 Webview finished loading for tab:', tab.id);
+        updateNavButtons();
+    };
+
+    // Store references for cleanup
+    tab.webview._eventHandlers = {
+        'did-navigate': didNavigateHandler,
+        'did-navigate-in-page': didNavigateInPageHandler,
+        'page-title-updated': pageTitleUpdatedHandler,
+        'dom-ready': domReadyHandler,
+        'did-stop-loading': didStopLoadingHandler
+    };
+
+    // Add event listeners
+    tab.webview.addEventListener('did-navigate', didNavigateHandler);
+    tab.webview.addEventListener('did-navigate-in-page', didNavigateInPageHandler);
+    tab.webview.addEventListener('page-title-updated', pageTitleUpdatedHandler);
+    tab.webview.addEventListener('dom-ready', domReadyHandler);
+    tab.webview.addEventListener('did-stop-loading', didStopLoadingHandler);
+}
+
+// Cleanup function to remove all webview event listeners
+function cleanupWebviewEvents(tab) {
+    if (!tab.webview || !tab.webview._eventHandlers) return;
+
+    console.log('🧹 Cleaning up webview events for tab:', tab.id);
+
+    // Remove all stored event listeners
+    Object.entries(tab.webview._eventHandlers).forEach(([event, handler]) => {
+        tab.webview.removeEventListener(event, handler);
+    });    // Clear the handlers object
+    delete tab.webview._eventHandlers;
+
+    // Reset injection flag
+    delete tab.webview._newWindowHandlerInjected;
+
+    // Clear any pending updateTabInfo timeout
+    if (tab._updateTabInfoTimeout) {
+        clearTimeout(tab._updateTabInfoTimeout);
+        delete tab._updateTabInfoTimeout;
+    }
+
+    console.log('✅ Webview events cleanup complete for tab:', tab.id);
 }
 
 function updateTabInfo(tab) {
     if (!tab.webview) return;
     
-    Promise.all([
-        tab.webview.executeJavaScript('document.title').catch(() => ''),
-        tab.webview.executeJavaScript(`(() => {
-            const links = document.querySelectorAll('link[rel~="icon"]');
-            if (links.length) return links[0].href;
-            return '';
-        })()`).catch(() => '')
-    ]).then(([title, favicon]) => {
-        tab.title = title || tab.webview.getURL();
-        tab.favicon = favicon;
-        tab.url = tab.webview.getURL();
-        renderTabs();
-    });
+    // Throttle updateTabInfo to prevent excessive executeJavaScript calls
+    if (tab._updateTabInfoTimeout) {
+        clearTimeout(tab._updateTabInfoTimeout);
+    }
+    
+    tab._updateTabInfoTimeout = setTimeout(() => {
+        Promise.all([
+            tab.webview.executeJavaScript('document.title').catch(() => ''),
+            tab.webview.executeJavaScript(`(() => {
+                const links = document.querySelectorAll('link[rel~="icon"]');
+                if (links.length) return links[0].href;
+                return '';
+            })()`).catch(() => '')
+        ]).then(([title, favicon]) => {
+            tab.title = title || tab.webview.getURL();
+            tab.favicon = favicon;
+            tab.url = tab.webview.getURL();
+            renderTabs();
+        });
+        delete tab._updateTabInfoTimeout;
+    }, 100); // Throttle to 100ms
 }
 
 
@@ -312,13 +399,29 @@ function updateTabInfo(tab) {
 function updateUrlBarForActiveTab() {
     const urlBar = document.getElementById('url-bar');
     const activeTab = tabs.find(t => t.active);
-    if (urlBar && activeTab && activeTab.webview) {
-        urlBar.textContent = activeTab.webview.getURL();
+    if (urlBar && activeTab) {
+        // Get URL from webview if available, otherwise use the tab's stored URL
+        let displayUrl = '';
+        if (activeTab.webview) {
+            try {
+                displayUrl = activeTab.webview.getURL() || activeTab.url;
+            } catch (error) {
+                // If webview is not ready yet, use stored URL
+                displayUrl = activeTab.url;
+            }
+        } else {
+            // No webview yet, use stored URL
+            displayUrl = activeTab.url;
+        }
+        urlBar.textContent = displayUrl || DEFAULT_URL;
     }
 }
 
 // Initialize modules with tab-aware navigation
+console.log('🚀 Initializing tab-aware navigation...');
 initTabAwareNavigation();
+console.log('✅ Tab-aware navigation initialized');
+
 initDropdown(menuBtn, dropdownMenu, webviewField);
 
 // Initialize improved cache clearing function
@@ -372,13 +475,21 @@ if (webview) {
             e.stopPropagation();
             console.log('🚫 Middle mouse down on initial webview prevented');
         }
+    });    // Wait for webview to be ready before attaching events
+    webview.addEventListener('dom-ready', () => {
+        console.log('✅ Initial webview is ready');
+        attachWebviewEvents(tabs[0]);
+        updateTabInfo(tabs[0]);
+        updateNavButtons();
     });
-    
-    attachWebviewEvents(tabs[0]);
-    updateTabInfo(tabs[0]);
+} else {
+    console.warn('⚠️ Initial webview not found, creating new tab');
+    addTab(DEFAULT_URL);
 }
 renderTabs();
 updateNavButtons();
+// Ensure URL bar shows the default URL immediately on startup
+updateUrlBarForActiveTab();
 
 // Safeguard: Ensure main application window.open is not affected
 // This protects the main app's popups (settings, notifications, etc.)
@@ -386,3 +497,60 @@ if (window.location.protocol === 'file:' && window.location.pathname.includes('i
     console.log('🛡️ Main application window protected from new window handler');
     // Ensure we don't interfere with main app popups
 }
+
+// Developer console helpers for testing navigation
+window.testNavigation = {
+    back: () => {
+        console.log('🧪 Testing back navigation...');
+        const activeTab = tabs.find(t => t.active);
+        if (activeTab && activeTab.webview) {
+            console.log('Active tab webview found:', activeTab.webview);
+            console.log('Can go back:', activeTab.webview.canGoBack());
+            if (activeTab.webview.canGoBack()) {
+                activeTab.webview.goBack();
+                console.log('✅ Back navigation executed');
+            } else {
+                console.log('❌ Cannot go back - no history');
+            }
+        } else {
+            console.log('❌ No active webview found');
+        }
+    },
+    forward: () => {
+        console.log('🧪 Testing forward navigation...');
+        const activeTab = tabs.find(t => t.active);
+        if (activeTab && activeTab.webview) {
+            console.log('Active tab webview found:', activeTab.webview);
+            console.log('Can go forward:', activeTab.webview.canGoForward());
+            if (activeTab.webview.canGoForward()) {
+                activeTab.webview.goForward();
+                console.log('✅ Forward navigation executed');
+            } else {
+                console.log('❌ Cannot go forward - no forward history');
+            }
+        } else {
+            console.log('❌ No active webview found');
+        }
+    },
+    refresh: () => {
+        console.log('🧪 Testing refresh...');
+        const activeTab = tabs.find(t => t.active);
+        if (activeTab && activeTab.webview) {
+            console.log('Active tab webview found:', activeTab.webview);
+            activeTab.webview.reload();
+            console.log('✅ Refresh executed');
+        } else {
+            console.log('❌ No active webview found');
+        }
+    },
+    showTabs: () => {
+        console.log('📋 Current tabs:', tabs);
+        console.log('Active tab:', tabs.find(t => t.active));
+    }
+};
+
+console.log('🛠️ Developer navigation helpers loaded! Try:');
+console.log('  testNavigation.back() - Test back navigation');
+console.log('  testNavigation.forward() - Test forward navigation'); 
+console.log('  testNavigation.refresh() - Test refresh');
+console.log('  testNavigation.showTabs() - Show current tabs');

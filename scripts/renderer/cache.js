@@ -1,8 +1,17 @@
 // Comprehensive browser data clearing logic
 import { showNotification } from './notification.js';
 
+// Store reference to prevent multiple listeners
+let cacheClickHandler = null;
+
 export function initCacheClear(clearCacheBtn, webview, dropdownMenu) {
-    clearCacheBtn.addEventListener('click', async () => {
+    // Remove existing listener if it exists
+    if (cacheClickHandler) {
+        clearCacheBtn.removeEventListener('click', cacheClickHandler);
+    }
+    
+    // Create new handler
+    cacheClickHandler = async () => {
         const { session } = require('@electron/remote');
         
         try {
@@ -76,32 +85,49 @@ export function initCacheClear(clearCacheBtn, webview, dropdownMenu) {
                 console.log('✅ Network predictor data cleared');
             } catch (netErr) {
                 console.log('ℹ️ Network predictor clearing not available');
-            }
+            }            // Reload the active webview
+            let activeWebview = null;
+            let shouldReload = false;
             
-            // Reload the active webview
             if (webview && typeof webview.reload === 'function') {
-                webview.reload();
+                activeWebview = webview;
+                shouldReload = true;
             } else {
                 // Handle tab-aware reloading for multiple webviews
+                // Cache the DOM queries for better performance
                 const activeTab = document.querySelector('.tab.active');
                 if (activeTab) {
                     const webviewId = 'browser-frame-' + activeTab.dataset.tabId;
-                    const activeWebview = document.getElementById(webviewId) || document.getElementById('browser-frame');
-                    if (activeWebview && typeof activeWebview.reload === 'function') {
-                        activeWebview.reload();
-                    }
+                    activeWebview = document.getElementById(webviewId) || document.getElementById('browser-frame');
+                    shouldReload = activeWebview && typeof activeWebview.reload === 'function';
                 }
             }
             
-            showNotification('All browser data cleared successfully!', 3000);
+            // Perform reload if we have a valid webview
+            if (shouldReload && activeWebview) {
+                activeWebview.reload();
+            }
+            
+            showNotification('Cache cleared successfully!', 3000);
             console.log('🎉 Complete browser data clearing finished successfully');
             
         } catch (err) {
             console.error('❌ Error clearing browser data:', err);
             showNotification('Failed to clear browser data: ' + err.message, 4000);
-        }
-        
+        }        
         // Close the dropdown menu
         dropdownMenu.classList.remove('show');
-    });
+    };
+    
+    // Add the new listener
+    clearCacheBtn.addEventListener('click', cacheClickHandler);
+}
+
+// Export cleanup function for proper module unloading
+export function cleanup() {
+    const clearCacheBtn = document.getElementById('clear-cache-btn');
+    if (clearCacheBtn && cacheClickHandler) {
+        clearCacheBtn.removeEventListener('click', cacheClickHandler);
+        cacheClickHandler = null;
+    }
 }

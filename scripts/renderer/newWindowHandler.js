@@ -256,8 +256,17 @@ export function injectNewWindowHandler(webview) {
 export function setupNewWindowHandling(tab) {
     if (!tab || !tab.webview) return;
 
+    // Prevent attaching listeners multiple times
+    if (tab.webview._newWindowHandlersAttached) {
+        console.log('⚠️ New window handlers already attached to tab:', tab.id);
+        return;
+    }
+    tab.webview._newWindowHandlersAttached = true;
+
+    console.log('🔗 Setting up new window handling for tab:', tab.id);
+
     // Handle new-window events at the webview level
-    tab.webview.addEventListener('new-window', (event) => {
+    const newWindowHandler = (event) => {
         console.log('🚫 new-window event intercepted:', event.url, 'disposition:', event.disposition, 'features:', event.windowFeatures);
 
         // Define conditions that indicate a legitimate popup vs unwanted new tab
@@ -312,13 +321,45 @@ export function setupNewWindowHandling(tab) {
             console.log('➡️ Redirecting to current tab:', event.url);
             tab.webview.loadURL(event.url);
         }
-    });
+    };
+
+    // Store reference to the handler for potential cleanup
+    tab.webview._newWindowHandler = newWindowHandler;
+    tab.webview.addEventListener('new-window', newWindowHandler);
 
     // Also handle will-navigate events for additional coverage
-    tab.webview.addEventListener('will-navigate', (event) => {
+    const willNavigateHandler = (event) => {
         // Allow normal navigation
         console.log('🔄 will-navigate:', event.url);
-    });
+    };
+
+    // Store reference to the handler for potential cleanup
+    tab.webview._willNavigateHandler = willNavigateHandler;
+    tab.webview.addEventListener('will-navigate', willNavigateHandler);
 
     console.log('✅ New window handling setup complete for tab:', tab.id);
+}
+
+// Cleanup function to remove event listeners when a tab is closed
+export function cleanupNewWindowHandling(tab) {
+    if (!tab || !tab.webview) return;
+
+    console.log('🧹 Cleaning up new window handlers for tab:', tab.id);
+
+    // Remove new-window event listener
+    if (tab.webview._newWindowHandler) {
+        tab.webview.removeEventListener('new-window', tab.webview._newWindowHandler);
+        delete tab.webview._newWindowHandler;
+    }
+
+    // Remove will-navigate event listener
+    if (tab.webview._willNavigateHandler) {
+        tab.webview.removeEventListener('will-navigate', tab.webview._willNavigateHandler);
+        delete tab.webview._willNavigateHandler;
+    }
+
+    // Reset the flag
+    delete tab.webview._newWindowHandlersAttached;
+
+    console.log('✅ New window handlers cleanup complete for tab:', tab.id);
 }
