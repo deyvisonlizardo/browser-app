@@ -60,29 +60,20 @@ function initTabAwareNavigation() {
         const activeTab = tabs.find(t => t.active);
         if (activeTab && activeTab.webview && activeTab.webview.canGoBack()) {
             activeTab.webview.goBack();
-            showNotification('Navigated back', 2000);
-        } else {
-            showNotification('Cannot go back', 2000);
         }
     });
-    
+
     forwardBtn.addEventListener('click', () => {
         const activeTab = tabs.find(t => t.active);
         if (activeTab && activeTab.webview && activeTab.webview.canGoForward()) {
             activeTab.webview.goForward();
-            showNotification('Navigated forward', 2000);
-        } else {
-            showNotification('Cannot go forward', 2000);
         }
     });
-    
+
     refreshBtn.addEventListener('click', () => {
         const activeTab = tabs.find(t => t.active);
         if (activeTab && activeTab.webview) {
             activeTab.webview.reload();
-            showNotification('Page refreshed', 2000);
-        } else {
-            showNotification('Cannot refresh - no active tab', 2000);
         }
     });
 }
@@ -91,7 +82,7 @@ function createTabElement(tab) {
     const tabDiv = document.createElement('div');
     tabDiv.className = 'tab' + (tab.active ? ' active' : '');
     tabDiv.dataset.tabId = tab.id;
-    
+
     // Favicon
     if (tab.favicon) {
         const icon = document.createElement('img');
@@ -103,7 +94,7 @@ function createTabElement(tab) {
         icon.style.verticalAlign = 'middle';
         tabDiv.appendChild(icon);
     }
-    
+
     // Title
     const maxTabTitleLength = 32;
     let displayTitle = tab.title || tab.url;
@@ -118,7 +109,7 @@ function createTabElement(tab) {
     titleSpan.style.maxWidth = '160px';
     titleSpan.style.display = 'inline-block';
     tabDiv.appendChild(titleSpan);
-    
+
     // Close button
     const closeBtn = document.createElement('button');
     closeBtn.className = 'close-tab';
@@ -129,9 +120,9 @@ function createTabElement(tab) {
         closeTab(tab.id);
     };
     tabDiv.appendChild(closeBtn);
-      // Click to activate
+    // Click to activate
     tabDiv.onclick = () => activateTab(tab.id);
-    
+
     // Prevent middle mouse button from opening new tabs
     tabDiv.addEventListener('auxclick', (e) => {
         if (e.button === 1) { // Middle mouse button
@@ -141,31 +132,31 @@ function createTabElement(tab) {
             activateTab(tab.id);
         }
     });
-    
+
     tabDiv.addEventListener('mousedown', (e) => {
         if (e.button === 1) { // Middle mouse button
             e.preventDefault();
             e.stopPropagation();
         }
     });
-    
+
     return tabDiv;
 }
 
 function renderTabs() {
     const tabBar = document.getElementById('tab-bar');
     if (!tabBar) return;
-    
+
     // Remove all tabs except the add button
     Array.from(tabBar.querySelectorAll('.tab')).forEach(t => t.remove());
-    
+
     // Insert tabs before the add button
     const addBtn = tabBar.querySelector('#add-tab-btn');
     tabs.forEach(tab => {
         const tabElem = createTabElement(tab);
         tabBar.insertBefore(tabElem, addBtn);
     });
-    
+
     // Show/hide add button based on max tabs limit
     if (tabs.length >= MAX_TABS) {
         addBtn.style.display = 'none';
@@ -177,20 +168,20 @@ function renderTabs() {
 function activateTab(tabId) {
     tabs.forEach(tab => tab.active = (tab.id === tabId));
     renderTabs();
-    
+
     // Hide all webviews, show only the active one
     tabs.forEach(tab => {
         if (tab.webview) {
             tab.webview.style.display = tab.active ? '' : 'none';
         }
     });
-    
+
     // If the webview doesn't exist yet, create it
     const tab = tabs.find(t => t.id === tabId);
     if (tab && !tab.webview) {
         createWebviewForTab(tab);
     }
-    
+
     // Update url bar and navigation buttons for the active tab
     updateUrlBarForActiveTab();
     updateNavButtons();
@@ -204,7 +195,7 @@ function createWebviewForTab(tab) {
     newWebview.style.width = '100%';
     newWebview.style.height = '100%';
     newWebview.style.display = tab.active ? '' : 'none';
-    
+
     // Prevent middle mouse button from opening new tabs/windows
     newWebview.addEventListener('auxclick', (e) => {
         if (e.button === 1) { // Middle mouse button
@@ -213,7 +204,7 @@ function createWebviewForTab(tab) {
             console.log('🚫 Middle mouse click on webview prevented');
         }
     });
-    
+
     newWebview.addEventListener('mousedown', (e) => {
         if (e.button === 1) { // Middle mouse button
             e.preventDefault();
@@ -221,7 +212,7 @@ function createWebviewForTab(tab) {
             console.log('🚫 Middle mouse down on webview prevented');
         }
     });
-    
+
     webviewContainer.appendChild(newWebview);
     tab.webview = newWebview;
     attachWebviewEvents(tab);
@@ -230,27 +221,27 @@ function createWebviewForTab(tab) {
 function closeTab(tabId) {
     const idx = tabs.findIndex(t => t.id === tabId);
     if (idx === -1) return;
-    
+
     const tabToClose = tabs[idx];
-      // Clean up event listeners to prevent memory leaks
+    // Clean up event listeners to prevent memory leaks
     if (tabToClose.webview) {
         console.log('🧹 Cleaning up event listeners for tab:', tabId);
-        
+
         // Clean up new window handlers
         cleanupNewWindowHandling(tabToClose);
-        
+
         // Clean up webview events
         cleanupWebviewEvents(tabToClose);
-        
+
         // Reset the main listeners flag
         delete tabToClose.webview._listenersAttached;
-        
+
         // Remove the webview from DOM
         tabToClose.webview.remove();
     }
-    
+
     tabs.splice(idx, 1);
-    
+
     // If no tabs left, open a new one with default page
     if (tabs.length === 0) {
         addTab(DEFAULT_URL);
@@ -264,7 +255,7 @@ function closeTab(tabId) {
 function addTab(url = null) {
     // Always use DEFAULT_URL for new tabs unless a specific URL is provided
     const defaultUrl = url || DEFAULT_URL;
-    
+
     const newTab = {
         id: tabIdCounter++,
         title: 'Loading...',
@@ -273,7 +264,7 @@ function addTab(url = null) {
         active: true,
         webview: null
     };
-    
+
     tabs.forEach(t => t.active = false);
     tabs.push(newTab);
     renderTabs();
@@ -306,13 +297,13 @@ function attachWebviewEvents(tab) {
 
     const pageTitleUpdatedHandler = () => {
         updateTabInfo(tab);
-    };    const domReadyHandler = () => {
+    }; const domReadyHandler = () => {
         console.log('✅ Webview DOM ready for tab:', tab.id);
         // Initial tab info update when DOM is ready
         updateTabInfo(tab);
         updateUrlBarForActiveTab();
         updateNavButtons();
-        
+
         // Inject script to handle new window/tab requests
         // This only affects the webview content, not the main application
         // Only inject once per webview to prevent memory leaks
@@ -370,12 +361,12 @@ function cleanupWebviewEvents(tab) {
 
 function updateTabInfo(tab) {
     if (!tab.webview) return;
-    
+
     // Throttle updateTabInfo to prevent excessive executeJavaScript calls
     if (tab._updateTabInfoTimeout) {
         clearTimeout(tab._updateTabInfoTimeout);
     }
-    
+
     tab._updateTabInfoTimeout = setTimeout(() => {
         Promise.all([
             tab.webview.executeJavaScript('document.title').catch(() => ''),
@@ -468,7 +459,7 @@ if (webview) {
             console.log('🚫 Middle mouse click on initial webview prevented');
         }
     });
-    
+
     webview.addEventListener('mousedown', (e) => {
         if (e.button === 1) { // Middle mouse button
             e.preventDefault();
@@ -551,6 +542,6 @@ window.testNavigation = {
 
 console.log('🛠️ Developer navigation helpers loaded! Try:');
 console.log('  testNavigation.back() - Test back navigation');
-console.log('  testNavigation.forward() - Test forward navigation'); 
+console.log('  testNavigation.forward() - Test forward navigation');
 console.log('  testNavigation.refresh() - Test refresh');
 console.log('  testNavigation.showTabs() - Show current tabs');
